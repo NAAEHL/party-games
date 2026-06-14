@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jeux de Soirée · Party Games</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{min-height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
+  button{cursor:pointer;border:none;font-family:inherit}
+
+  /* SCREENS */
+  .screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+  .screen.active{display:flex}
+
+  /* LANG */
+  .lang-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:48px 40px;text-align:center;max-width:380px;width:100%}
+  .lang-emoji{font-size:64px;margin-bottom:16px}
+  .lang-title{font-size:28px;font-weight:800;margin-bottom:32px;line-height:1.3;color:#fff}
+  .lang-title span{color:#a0aec0;font-size:20px;font-weight:400;display:block}
+  .lang-btns{display:flex;flex-direction:column;gap:12px}
+  .lang-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#fff;font-size:18px;padding:14px 24px;display:flex;align-items:center;gap:12px;transition:all .2s}
+  .lang-btn:hover{background:rgba(255,255,255,.15)}
+
+  /* MENU */
+  .menu-wrap{max-width:560px;width:100%;text-align:center;position:relative}
+  .lang-switch{position:absolute;top:-8px;right:0;background:rgba(255,255,255,.1);border-radius:8px;font-size:20px;padding:6px 10px}
+  .menu-title{font-size:36px;font-weight:800;margin-bottom:8px}
+  .menu-sub{color:#a0aec0;font-size:16px;margin-bottom:40px}
+  .game-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+  .game-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:32px 24px;text-align:center;flex:1 1 200px;max-width:240px;transition:all .2s;color:#fff}
+  .game-card:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+  .game-icon{font-size:48px;margin-bottom:12px}
+  .game-name{font-size:18px;font-weight:700;margin-bottom:8px}
+  .game-desc{color:#718096;font-size:13px;line-height:1.5}
+
+  /* WYR GAME MODE SELECT */
+  .mode-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:36px;max-width:500px;width:100%;text-align:center}
+  .mode-title{font-size:22px;font-weight:700;margin-bottom:8px}
+  .mode-sub{color:#718096;font-size:14px;margin-bottom:28px}
+  .mode-btns{display:flex;flex-direction:column;gap:12px}
+  .mode-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#fff;font-size:15px;font-weight:600;padding:16px 24px;text-align:left;display:flex;align-items:center;gap:12px;transition:all .2s}
+  .mode-btn:hover{background:rgba(255,255,255,.12)}
+  .mode-btn .mode-icon{font-size:28px}
+  .mode-btn .mode-label{flex:1}
+  .mode-btn .mode-tag{font-size:11px;color:#fc8181;background:rgba(252,129,129,.15);border:1px solid rgba(252,129,129,.3);border-radius:6px;padding:2px 8px}
+
+  /* NSFW GATE */
+  .nsfw-gate{background:rgba(252,129,129,.08);border:1px solid rgba(252,129,129,.3);border-radius:24px;padding:40px;max-width:420px;width:100%;text-align:center}
+  .nsfw-emoji{font-size:56px;margin-bottom:16px}
+  .nsfw-title{font-size:22px;font-weight:700;color:#fc8181;margin-bottom:12px}
+  .nsfw-text{color:#a0aec0;font-size:14px;line-height:1.6;margin-bottom:28px}
+  .nsfw-confirm{background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:12px;color:#fff;font-size:16px;font-weight:600;padding:14px 32px;width:100%;margin-bottom:12px}
+  .nsfw-cancel{background:none;color:#a0aec0;font-size:14px;padding:8px}
+
+  /* WYR PLAYING */
+  .wyr-wrap{max-width:600px;width:100%}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .back-btn{background:none;color:#a0aec0;font-size:14px;padding:0}
+  .q-counter{color:#718096;font-size:13px}
+  .progress-bar{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-bottom:32px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#4fd1c5,#667eea);border-radius:2px;transition:width .4s ease}
+  .wyr-choices{display:flex;gap:16px;width:100%;flex-wrap:wrap;margin-bottom:16px}
+  .wyr-option{flex:1 1 200px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:16px;color:#e2e8f0;font-size:15px;font-weight:500;padding:28px 20px;text-align:center;line-height:1.5;transition:all .2s;position:relative;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  .wyr-option:hover:not(:disabled){border-color:#4fd1c5;background:rgba(79,209,197,.08)}
+  .wyr-option.chosen{border:2px solid #4fd1c5;background:rgba(79,209,197,.12);color:#fff}
+  .wyr-option.dim{opacity:.4}
+  .wyr-option.not-chosen{opacity:.5}
+  .vote-pct{font-size:28px;font-weight:800;color:#4fd1c5}
+  .or-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#a0aec0;font-weight:700;font-size:13px;flex-shrink:0;align-self:center}
+  .vote-bar{display:flex;width:100%;height:6px;border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .vote-seg-a{height:100%;background:#4fd1c5;transition:width .6s ease}
+  .vote-seg-b{height:100%;background:#667eea;transition:width .6s ease}
+  .vote-count{color:#718096;font-size:12px;text-align:center;margin-bottom:12px}
+
+  /* BUTTONS */
+  .btn-primary{background:linear-gradient(135deg,#4fd1c5,#667eea);border-radius:12px;color:#fff;font-size:16px;font-weight:600;padding:14px 32px;width:100%;max-width:320px;display:block;margin:8px auto 0}
+  .btn-primary:hover{opacity:.9}
+  .btn-secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:12px;color:#a0aec0;font-size:15px;padding:12px 24px}
+  .btn-secondary:hover{background:rgba(255,255,255,.14)}
+  .btn-danger{background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:12px;color:#fff;font-size:16px;font-weight:600;padding:14px 32px;width:100%;max-width:320px;display:block;margin:8px auto 0}
+
+  /* DONE */
+  .done-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:48px;text-align:center;max-width:400px;width:100%;display:flex;flex-direction:column;align-items:center}
+  .done-title{font-size:28px;font-weight:700;margin:16px 0 8px}
+  .done-sub{color:#a0aec0;margin-bottom:32px}
+
+  /* IP GAME */
+  .ip-wrap{max-width:540px;width:100%}
+  .ip-title{font-size:26px;font-weight:700;margin-bottom:6px;text-align:center}
+  .ip-sub{color:#718096;font-size:14px;text-align:center;margin-bottom:28px;line-height:1.5}
+  .points-badge{border-radius:20px;padding:6px 16px;font-weight:700;font-size:14px;transition:background .3s}
+  .points-ok{background:#68d391;color:#1a1a2e}
+  .points-warn{background:#f6e05e;color:#1a1a2e}
+  .points-over{background:#fc8181;color:#1a1a2e}
+  .sliders{display:flex;flex-direction:column;gap:16px}
+  .slider-row{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px}
+  .slider-header{display:flex;justify-content:space-between;align-items:center;color:#e2e8f0;font-weight:600;font-size:15px;margin-bottom:4px}
+  .slider-val{color:#4fd1c5;font-weight:700;font-size:16px}
+  .slider-desc{color:#718096;font-size:12px;margin:0 0 12px}
+  input[type=range]{width:100%;accent-color:#4fd1c5;cursor:pointer}
+  .range-labels{display:flex;justify-content:space-between;color:#4a5568;font-size:11px;margin-top:2px}
+  .error-msg{color:#fc8181;text-align:center;font-size:13px;margin-top:8px}
+  .ip-actions{display:flex;gap:12px;margin-top:24px;justify-content:center;flex-wrap:wrap}
+
+  /* IP RESULT */
+  .ip-result{max-width:520px;width:100%;display:flex;flex-direction:column;gap:16px}
+  .result-title{font-size:26px;font-weight:700;text-align:center}
+  .result-sub{color:#718096;font-size:14px;text-align:center}
+  .radar{display:flex;flex-direction:column;gap:10px;background:rgba(255,255,255,.03);border-radius:16px;padding:20px}
+  .radar-row{display:flex;align-items:center;gap:10px}
+  .radar-icon{font-size:20px;width:28px}
+  .radar-label{color:#a0aec0;font-size:13px;width:140px;flex-shrink:0}
+  .radar-bar-bg{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+  .radar-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+  .radar-score{color:#e2e8f0;font-weight:700;font-size:13px;width:40px;text-align:right}
+  .insights{display:flex;flex-direction:column;gap:10px}
+  .insight-card{background:rgba(255,255,255,.04);border:1px solid rgba(79,209,197,.3);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px}
+  .insight-card.danger{border-color:rgba(252,129,129,.3)}
+  .insight-label{color:#718096;font-size:12px;margin-bottom:2px}
+  .insight-value{color:#fff;font-weight:600;font-size:15px}
+
+  /* UTILS */
+  .center{text-align:center}
+  .mt16{margin-top:16px}
+  .flex-col{display:flex;flex-direction:column;align-items:center;gap:12px}
+
+  @media(max-width:480px){
+    .wyr-choices{flex-direction:column}
+    .or-badge{transform:rotate(90deg)}
+    .lang-card{padding:32px 24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SCREEN: LANG ═══ -->
+<div class="screen active" id="s-lang">
+  <div class="lang-card">
+    <div class="lang-emoji">🎲</div>
+    <h1 class="lang-title">Jeux de Soirée <span>Party Games</span></h1>
+    <div class="lang-btns">
+      <button class="lang-btn" onclick="setLang('fr')">🇫🇷 Français</button>
+      <button class="lang-btn" onclick="setLang('en')">🇬🇧 English</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: MENU ═══ -->
+<div class="screen" id="s-menu">
+  <div class="menu-wrap">
+    <button class="lang-switch" onclick="goTo('s-lang')">🌐</button>
+    <h1 class="menu-title" id="menu-title"></h1>
+    <p class="menu-sub" id="menu-sub"></p>
+    <div class="game-cards">
+      <button class="game-card" onclick="goTo('s-wyr-mode')">
+        <div class="game-icon">🤔</div>
+        <div class="game-name" id="menu-wyr"></div>
+        <div class="game-desc" id="menu-wyr-desc"></div>
+      </button>
+      <button class="game-card" onclick="startIP()">
+        <div class="game-icon">💘</div>
+        <div class="game-name" id="menu-ip"></div>
+        <div class="game-desc" id="menu-ip-desc"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: WYR MODE SELECT ═══ -->
+<div class="screen" id="s-wyr-mode">
+  <div class="mode-card">
+    <button class="back-btn" onclick="goTo('s-menu')" style="display:block;margin-bottom:20px;text-align:left">← <span id="back-label"></span></button>
+    <div class="game-icon">🤔</div>
+    <h2 class="mode-title" id="mode-title"></h2>
+    <p class="mode-sub" id="mode-sub"></p>
+    <div class="mode-btns">
+      <button class="mode-btn" onclick="startWYR('normal')">
+        <span class="mode-icon">🎯</span>
+        <span class="mode-label" id="mode-normal-label"></span>
+      </button>
+      <button class="mode-btn" onclick="showNSFWGate()">
+        <span class="mode-icon">🔞</span>
+        <span class="mode-label" id="mode-nsfw-label"></span>
+        <span class="mode-tag">18+</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: NSFW GATE ═══ -->
+<div class="screen" id="s-nsfw-gate">
+  <div class="nsfw-gate">
+    <div class="nsfw-emoji">🔞</div>
+    <h2 class="nsfw-title" id="nsfw-title"></h2>
+    <p class="nsfw-text" id="nsfw-text"></p>
+    <button class="nsfw-confirm" onclick="startWYR('nsfw')" id="nsfw-confirm"></button>
+    <button class="nsfw-cancel" onclick="goTo('s-wyr-mode')" id="nsfw-cancel"></button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: WYR PLAYING ═══ -->
+<div class="screen" id="s-wyr">
+  <div class="wyr-wrap">
+    <div class="top-bar">
+      <button class="back-btn" id="wyr-back-btn" onclick="goTo('s-wyr-mode')"></button>
+      <span class="q-counter" id="wyr-counter"></span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="wyr-progress"></div></div>
+    <div id="wyr-choices" class="wyr-choices"></div>
+    <div id="wyr-vote-bar" class="vote-bar" style="display:none">
+      <div class="vote-seg-a" id="vote-seg-a"></div>
+      <div class="vote-seg-b" id="vote-seg-b"></div>
+    </div>
+    <div id="wyr-vote-count" class="vote-count" style="display:none"></div>
+    <div id="wyr-actions" class="center"></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: WYR DONE ═══ -->
+<div class="screen" id="s-wyr-done">
+  <div class="done-card">
+    <div style="font-size:56px">🎉</div>
+    <h2 class="done-title" id="done-title"></h2>
+    <p class="done-sub" id="done-sub"></p>
+    <button class="btn-primary" onclick="restartWYR()" id="done-again"></button>
+    <button class="btn-secondary mt16" onclick="goTo('s-menu')" id="done-menu"></button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: IP GAME ═══ -->
+<div class="screen" id="s-ip">
+  <div class="ip-wrap">
+    <div class="top-bar">
+      <button class="back-btn" onclick="goTo('s-menu')" id="ip-back"></button>
+      <div class="points-badge points-ok" id="ip-points-badge"></div>
+    </div>
+    <h2 class="ip-title" id="ip-title"></h2>
+    <p class="ip-sub" id="ip-sub-text"></p>
+    <div class="sliders" id="ip-sliders"></div>
+    <p class="error-msg" id="ip-error" style="display:none"></p>
+    <div class="ip-actions">
+      <button class="btn-secondary" onclick="resetIP()" id="ip-reset"></button>
+      <button class="btn-primary" onclick="validateIP()" id="ip-validate"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: IP RESULT ═══ -->
+<div class="screen" id="s-ip-result">
+  <div class="ip-result">
+    <button class="back-btn" onclick="goTo('s-menu')" id="ip-result-back" style="margin-bottom:8px"></button>
+    <h2 class="result-title" id="ip-result-title"></h2>
+    <p class="result-sub" id="ip-result-sub"></p>
+    <div class="radar" id="ip-radar"></div>
+    <div class="insights" id="ip-insights"></div>
+    <button class="btn-primary" onclick="startIP()" id="ip-play-again"></button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// SUPABASE
+// ════════════════════════════════════════════
+const SB_URL = "https://ukyonnnbmkbwimtvkxpg.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVreW9ubm5ibWtid2ltdHZreHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4OTUxMjAsImV4cCI6MjA2NTQ3MTEyMH0.nVwQGj11fICCeV_HEfkE5IYd0N50jWxH1v4WNDcXMLQ";
+
+async function sbFetch(method, path, body) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/${path}`, {
+      method, headers: {
+        apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: method==="POST" ? "return=representation" : ""
+      }, body: body ? JSON.stringify(body) : undefined
+    });
+    const t = await r.text(); return t ? JSON.parse(t) : null;
+  } catch(e) { return null; }
+}
+
+async function getVotes(qid) {
+  const rows = await sbFetch("GET", `wyr_votes2?question_id=eq.${qid}&select=choice`);
+  if (!rows || !Array.isArray(rows)) return {a:0,b:0};
+  return { a: rows.filter(r=>r.choice==="a").length, b: rows.filter(r=>r.choice==="b").length };
+}
+async function castVote(qid, choice) {
+  await sbFetch("POST", "wyr_votes2", {question_id: qid, choice});
+}
+
+// ════════════════════════════════════════════
+// TRANSLATIONS
+// ════════════════════════════════════════════
+const T = {
+  fr: {
+    menuTitle:"Jeux de Soirée", menuSub:"Deux jeux pour mieux se connaître",
+    wyrName:"Tu Préfères ?", wyrDesc:"Réponds à des dilemmes et découvre ce que les autres ont choisi",
+    ipName:"Partenaire Idéal", ipDesc:"Répartis 40 points sur 6 qualités pour révéler tes vraies priorités",
+    back:"← Retour", backMenu:"Menu principal",
+    modeTitle:"Choisir un mode", modeSub:"Sélectionne le type de questions",
+    modeNormal:"Questions générales (toutes catégories mélangées)",
+    modeNSFW:"Questions adultes réservées 18+",
+    nsfwTitle:"Contenu réservé aux adultes",
+    nsfwText:"Cette section contient des questions explicites et à caractère sexuel. En continuant, tu confirmes avoir 18 ans ou plus et acceptes de voir ce type de contenu.",
+    nsfwConfirm:"J'ai 18+ ans — Continuer",
+    nsfwCancel:"Annuler",
+    or:"OU", reveal:"Révéler les résultats", next:"Question suivante →",
+    qLabel:"Question", ofLabel:"sur",
+    voteCount:(a,b)=>`${a+b} vote${a+b>1?'s':''} au total`,
+    doneTitle:"Terminé !", doneSub:(n)=>`Tu as répondu à ${n} questions.`,
+    playAgain:"Rejouer", backToMenu:"Menu principal",
+    ipTitle:"Partenaire Idéal",
+    ipSub:"Tu n'as que 40 points à répartir sur 6 qualités. Fais tes choix !",
+    ptsLeft:(n)=>`${n} pts restants`,
+    validate:"Valider mon profil", reset:"Réinitialiser",
+    pointsError:"Tu dois utiliser exactement 40 points !",
+    cats:{
+      intelligence:{name:"Intelligence",desc:"Scolaire, émotionnelle, créative… selon ta définition",icon:"🧠"},
+      beauty:{name:"Beauté physique",desc:"Purement l'esthétique du corps",icon:"✨"},
+      intimacy:{name:"Complicité intime",desc:"Le plaisir et la complicité physique",icon:"💫"},
+      compat:{name:"Feeling & passions",desc:"Loisirs, valeurs, humour, connexion naturelle",icon:"🎯"},
+      care:{name:"Attention & romantisme",desc:"Investissement dans la relation, tendresse",icon:"💝"},
+      money:{name:"Réussite financière",desc:"Ce qu'il/elle gagne par son travail",icon:"💼"},
+    },
+    resultTitle:"Ton partenaire idéal",
+    resultSub:"Ce que tes choix révèlent sur toi",
+    dominant:"Ta priorité absolue",
+    secondary:"Critère secondaire",
+    sacrifice:"Ce sur quoi tu fais des concessions",
+    wyrBack:"← Retour au menu"
+  },
+  en: {
+    menuTitle:"Party Games", menuSub:"Two games to know each other better",
+    wyrName:"Would You Rather?", wyrDesc:"Answer dilemmas and see what others chose",
+    ipName:"Ideal Partner", ipDesc:"Distribute 40 points across 6 qualities to reveal your true priorities",
+    back:"← Back", backMenu:"Main menu",
+    modeTitle:"Choose a mode", modeSub:"Select the type of questions",
+    modeNormal:"General questions (all categories shuffled)",
+    modeNSFW:"Adult questions — 18+ only",
+    nsfwTitle:"Adults only content",
+    nsfwText:"This section contains explicit and sexual questions. By continuing, you confirm you are 18 or older and consent to viewing this type of content.",
+    nsfwConfirm:"I'm 18+ — Continue",
+    nsfwCancel:"Cancel",
+    or:"OR", reveal:"Reveal results", next:"Next question →",
+    qLabel:"Question", ofLabel:"of",
+    voteCount:(a,b)=>`${a+b} vote${a+b>1?'s':''} total`,
+    doneTitle:"All done!", doneSub:(n)=>`You answered ${n} questions.`,
+    playAgain:"Play again", backToMenu:"Main menu",
+    ipTitle:"Ideal Partner",
+    ipSub:"You only have 40 points to spread across 6 qualities. Make your choices!",
+    ptsLeft:(n)=>`${n} pts left`,
+    validate:"Validate my profile", reset:"Reset",
+    pointsError:"You must use exactly 40 points!",
+    cats:{
+      intelligence:{name:"Intelligence",desc:"Academic, emotional, creative… your definition",icon:"🧠"},
+      beauty:{name:"Physical beauty",desc:"Purely the physical aesthetics",icon:"✨"},
+      intimacy:{name:"Intimate chemistry",desc:"Physical pleasure and chemistry",icon:"💫"},
+      compat:{name:"Compatibility & passions",desc:"Hobbies, values, humor, natural connection",icon:"🎯"},
+      care:{name:"Attentiveness & romance",desc:"Investment in the relationship, tenderness",icon:"💝"},
+      money:{name:"Financial success",desc:"What they earn through their work",icon:"💼"},
+    },
+    resultTitle:"Your ideal partner",
+    resultSub:"What your choices reveal about you",
+    dominant:"Your absolute priority",
+    secondary:"Secondary criterion",
+    sacrifice:"What you compromise on",
+    wyrBack:"← Back to menu"
+  }
+};
+
+// ════════════════════════════════════════════
+// QUESTIONS
+// ════════════════════════════════════════════
+const Q = {
+  fr: [
+    // GENERAL
+    {id:1,a:"Ne plus jamais dormir plus de 4h par nuit",b:"Dormir 12h par nuit sans pouvoir faire de sieste"},
+    {id:2,a:"Savoir que tout le monde ment quand il le fait",b:"Être incapable de mentir soi-même"},
+    {id:3,a:"Voyager dans le passé mais ne rien pouvoir changer",b:"Voir l'avenir mais ne rien pouvoir éviter"},
+    {id:4,a:"Être très riche mais seul(e) toute sa vie",b:"Être fauché(e) mais entouré(e) de personnes qui t'aiment"},
+    {id:5,a:"Avoir le pouvoir de voler mais à la vitesse de marche",b:"Être invisible mais seulement quand personne ne te regarde"},
+    {id:6,a:"Vivre 200 ans en bonne santé mais à l'époque médiévale",b:"Vivre 40 ans mais dans 200 ans dans le futur"},
+    {id:7,a:"Tout le monde sache ce que tu penses en permanence",b:"Tu saches ce que tout le monde pense de toi"},
+    {id:8,a:"Ne jamais ressentir la douleur physique",b:"Ne jamais ressentir la douleur émotionnelle"},
+    {id:9,a:"Être célèbre mais détesté(e) par la majorité",b:"Être inconnu(e) mais adoré(e) de ceux qui te connaissent"},
+    {id:10,a:"Pouvoir parler à tous les animaux",b:"Parler couramment toutes les langues humaines"},
+    {id:11,a:"Manger ton plat préféré à chaque repas pour toujours",b:"Ne jamais pouvoir remanger le même plat deux fois"},
+    {id:12,a:"Avoir une mémoire parfaite de tout",b:"Pouvoir effacer n'importe quel souvenir à volonté"},
+    {id:13,a:"Le français",b:"Les maths"},
+    {id:14,a:"Les arts visuels",b:"Le chant"},
+    {id:15,a:"Magicien",b:"Sorcier / Sorcière"},
+    {id:16,a:"Vacances d'été",b:"Vacances d'hiver"},
+    {id:17,a:"Maîtriser le feu",b:"Maîtriser l'eau"},
+    {id:18,a:"Maîtriser la terre",b:"Maîtriser l'air"},
+    {id:19,a:"Être intelligent(e) mais que tout le monde te croit bête",b:"Être bête mais que tout le monde te croit intelligent(e)"},
+    {id:20,a:"Rose",b:"Bleu"},
+    {id:21,a:"Médecine légale",b:"Médecin"},
+    {id:22,a:"Téléphone",b:"Ordinateur"},
+    {id:23,a:"Beau sourire",b:"Beaux yeux"},
+    {id:24,a:"Sourd(e)",b:"Muet(te)"},
+    {id:25,a:"La musique n'existe pas",b:"Les livres n'existent pas"},
+    {id:26,a:"Pompes",b:"Abdos"},
+    {id:27,a:"Norman",b:"Cyprien"},
+    {id:28,a:"Pilote de ligne",b:"Président de la République"},
+    {id:29,a:"Jus d'orange",b:"Jus de pomme"},
+    {id:30,a:"Ne plus jamais boire de lait",b:"Ne plus jamais boire d'alcool"},
+    {id:31,a:"Ne plus jamais manger de viande",b:"Ne plus jamais manger de produits laitiers"},
+    {id:32,a:"30 kg",b:"80 kg"},
+    {id:33,a:"12 chiens",b:"12 frères et sœurs"},
+    {id:34,a:"Mulan",b:"Cendrillon"},
+    {id:35,a:"Vaiana",b:"La Reine des Neiges"},
+    {id:36,a:"Hercule",b:"Tarzan"},
+    {id:37,a:"Kung Fu Panda",b:"Coco"},
+    {id:38,a:"Bambi",b:"Alice au pays des merveilles"},
+    {id:39,a:"Peter Pan",b:"Le Livre de la Jungle"},
+    {id:40,a:"Les Aristochats",b:"Les 101 Dalmatiens"},
+    {id:41,a:"Aladdin",b:"Pocahontas"},
+    {id:42,a:"Toy Story",b:"Atlantide"},
+    {id:43,a:"Lilo et Stitch",b:"Monstres & Cie"},
+    {id:44,a:"Le Monde de Nemo",b:"Frère des Ours"},
+    {id:45,a:"Raiponce",b:"Rebelle"},
+    {id:46,a:"Zootopie",b:"Les Indestructibles 2"},
+    {id:47,a:"Cars",b:"WALL-E"},
+    {id:48,a:"L'Âge de Glace",b:"Ratatouille"},
+    {id:49,a:"Manger des grenouilles",b:"Manger des escargots"},
+    {id:50,a:"RAP",b:"POP"},
+    {id:51,a:"Rock",b:"RnB"},
+    {id:52,a:"Reggae",b:"Reggaeton"},
+    {id:53,a:"DBZ",b:"Naruto"},
+    {id:54,a:"Naruto",b:"One Piece"},
+    {id:55,a:"Pokémon",b:"Fortnite"},
+    {id:56,a:"Être riche et malheureux",b:"Être pauvre et heureux"},
+    {id:57,a:"Bordélique",b:"Maniaque de l'ordre"},
+    {id:58,a:"Extraverti(e)",b:"Introverti(e)"},
+    {id:59,a:"Sweatshirt",b:"Gilet"},
+    {id:60,a:"Oversize",b:"Moulant"},
+    {id:61,a:"Ne pas avoir un centime sur son compte",b:"Ne pas avoir de cheveux"},
+    {id:62,a:"Chaussettes à motifs",b:"Chaussettes unies"},
+    {id:63,a:"Veste matelassée",b:"Manteau"},
+    {id:64,a:"Dominant(e)",b:"Soumis(e)"},
+    {id:65,a:"Enfants",b:"Animaux"},
+    {id:66,a:"L'amour",b:"L'argent"},
+    {id:67,a:"Style streetwear",b:"Style chic"},
+    {id:68,a:"Brun(e)",b:"Blond(e)"},
+    {id:69,a:"Avec la lumière",b:"Sans la lumière"},
+    {id:70,a:"Se venger",b:"Pardonner"},
+    {id:71,a:"Chignon",b:"Queue de cheval"},
+    {id:72,a:"Vrais ongles",b:"Faux ongles"},
+    {id:73,a:"Or",b:"Argent"},
+    {id:74,a:"Yeux sombres",b:"Yeux clairs"},
+    {id:75,a:"Tatoué(e)",b:"Sans tatouage"},
+    {id:76,a:"Lentilles",b:"Lunettes"},
+    {id:77,a:"Rose rouge",b:"Rose blanche"},
+    {id:78,a:"Mario",b:"Luigi"},
+    {id:79,a:"Netflix",b:"Cinéma"},
+    {id:80,a:"Vélo",b:"Trottinette électrique"},
+    {id:81,a:"Fraise",b:"Framboise"},
+    {id:82,a:"Mangue",b:"Ananas"},
+    {id:83,a:"Melon",b:"Pastèque"},
+    {id:84,a:"Pomme",b:"Poire"},
+    {id:85,a:"Piano",b:"Guitare"},
+    {id:86,a:"Trompette",b:"Saxophone"},
+    {id:87,a:"Harpe",b:"Flûte"},
+    {id:88,a:"Mars",b:"Twix"},
+    {id:89,a:"Un selfie",b:"Une photo de famille"},
+    {id:90,a:"Aller au ski",b:"Aller à la mer"},
+    {id:91,a:"L'œuf est arrivé en premier",b:"La poule est arrivée en premier"},
+    {id:92,a:"Douche",b:"Bain"},
+    {id:93,a:"Eau froide",b:"Eau chaude"},
+    {id:94,a:"Gaufres",b:"Crêpes"},
+    {id:95,a:"Glace",b:"Barbe à papa"},
+    {id:96,a:"Chanter",b:"Danser"},
+    {id:97,a:"Écrire",b:"Lire"},
+    {id:98,a:"Parler",b:"Écouter"},
+    {id:99,a:"McDonald's",b:"KFC"},
+    {id:100,a:"Pizza",b:"Lasagnes"},
+    {id:101,a:"Tacos",b:"Kebab"},
+    {id:102,a:"Sushis",b:"Brochettes de viande caramélisée"},
+    {id:103,a:"Raclette",b:"Fondue au fromage"},
+    {id:104,a:"Saumon",b:"Jambon cru"},
+    {id:105,a:"Tomate",b:"Avocat"},
+    {id:106,a:"Bowling",b:"Laser game"},
+    {id:107,a:"Escape game",b:"Paintball"},
+    {id:108,a:"Mölkky",b:"Pétanque"},
+    {id:109,a:"Droitier(e)",b:"Gaucher(e)"},
+    {id:110,a:"Moustache",b:"Barbe"},
+    {id:111,a:"Cheveux longs",b:"Cheveux courts"},
+    {id:112,a:"Stylo bille",b:"Stylo plume"},
+    {id:113,a:"Câlin",b:"Massage"},
+    {id:114,a:"Meilleur ami homme",b:"Meilleure amie femme"},
+    {id:115,a:"Crayon de papier",b:"Porte-mine"},
+    {id:116,a:"Gros muscles",b:"Gros cerveau"},
+    {id:117,a:"Pompier",b:"Astronaute"},
+    {id:118,a:"Assassin's Creed",b:"God of War"},
+    {id:119,a:"Mario Kart",b:"Zelda"},
+    {id:120,a:"2h de révisions",b:"2h de sport"},
+    {id:121,a:"Tout devant en classe",b:"Tout au fond en classe"},
+    {id:122,a:"Batman",b:"Superman"},
+    {id:123,a:"Dumbledore",b:"Gandalf"},
+    {id:124,a:"Pikachu",b:"Évoli"},
+    {id:125,a:"Carapuce",b:"Bulbizarre"},
+    {id:126,a:"Astérix",b:"Obélix"},
+    {id:127,a:"Apple",b:"Samsung"},
+    {id:128,a:"Messi",b:"Ronaldo"},
+    {id:129,a:"Goku",b:"Vegeta"},
+    {id:130,a:"Perdre tous ses contacts téléphoniques",b:"Ne pas avoir de batterie pendant deux jours"},
+    {id:131,a:"Danse avec les Stars",b:"The Voice"},
+    {id:132,a:"Secret Story",b:"L'Île de la Tentation"},
+    {id:133,a:"Table tennis",b:"Ping-pong"},
+    {id:134,a:"Pain au chocolat",b:"Chocolatine"},
+    {id:135,a:"Le monde d'Avatar",b:"Les Avengers"},
+    {id:136,a:"Participer aux Hunger Games",b:"Être plongé dans le Labyrinthe"},
+    {id:137,a:"Catwoman",b:"Wonder Woman"},
+    {id:138,a:"Iron Man",b:"Captain America"},
+    {id:139,a:"Thor",b:"Hulk"},
+    {id:140,a:"Deadpool",b:"Wolverine"},
+    {id:141,a:"Dormir sur le ventre",b:"Dormir sur le dos"},
+    {id:142,a:"Bar en date",b:"Cinéma en date"},
+    {id:143,a:"Pour le mariage",b:"Contre le mariage"},
+    {id:144,a:"Une relation passionnelle et idyllique d'1 an",b:"Une belle relation toute une vie"},
+    // FILIPINO CULTURE
+    {id:145,a:"Adobo",b:"Dinakdakan"},
+    {id:146,a:"Sinigang",b:"Bulalo"},
+    {id:147,a:"Du riz à volonté sans eau chaude",b:"De l'eau chaude mais sans riz pendant 1 mois par an"},
+    {id:148,a:"Halo-Halo",b:"Leche Flan"},
+    {id:149,a:"Karaoké à vie",b:"Island hopping à Palawan 1 fois par an sans karaoké"},
+    {id:150,a:"Jollibee Chickenjoy",b:"Lumpia maison"},
+    {id:151,a:"Voyager sur le toit d'un Jeepney",b:"Monter dans un tricycle avec 5 autres personnes"},
+    // GEOGRAPHY PH
+    {id:152,a:"Boracay",b:"Siargao"},
+    {id:153,a:"Tagaytay",b:"Baguio"},
+    {id:154,a:"Palawan",b:"Cebu"},
+    {id:155,a:"Chocolate Hills",b:"Volcan Mayon"},
+    {id:156,a:"Nager avec les requins baleines à Oslob",b:"Plonger avec les renards de mer à Malapascua"},
+    {id:157,a:"Randonnée sur le Mt. Pulag (mer de nuages)",b:"Randonnée sur le Mt. Apo (point culminant)"},
+    {id:158,a:"Se perdre dans la Rivière Souterraine (Puerto Princesa)",b:"Explorer la Rivière Enchantée (Surigao)"},
+    {id:159,a:"Volcan Taal (plus petit volcan actif)",b:"Mt. Pinatubo (trek jusqu'au lac de cratère)"},
+    // BOOKS & MOVIES
+    {id:160,a:"Fantasy héroïque",b:"Science-fiction"},
+    {id:161,a:"Roman d'amour",b:"Thriller"},
+    {id:162,a:"Princesse Mononoké",b:"Le Château dans le ciel"},
+    {id:163,a:"Cadeaux matériels",b:"Cadeaux immatériels"},
+    {id:164,a:"Partager ta vie avec quelqu'un de beau mais bête",b:"Partager ta vie avec quelqu'un de moche mais intelligent"},
+    // HYPOTHETICAL
+    {id:165,a:"Pour le congé paternité allongé",b:"Contre le congé paternité allongé"},
+    {id:166,a:"S'habiller tout en noir",b:"S'habiller en couleur"},
+    {id:167,a:"Plutôt séries",b:"Plutôt animés"},
+    {id:168,a:"Choisir ta mère",b:"Choisir ton/ta conjoint(e)"},
+    {id:169,a:"Te priver de sexe pendant 2 mois",b:"Te priver de junk food pendant 2 mois"},
+    {id:170,a:"Un fils gay",b:"Une fille lesbienne"},
+    {id:171,a:"Avoir la diarrhée pendant ton mariage",b:"Avoir un fou rire incontrôlable à des funérailles"},
+    {id:172,a:"Larguer quelqu'un",b:"Se faire larguer"},
+    {id:173,a:"Rancunier(e)",b:"Pas du tout rancunier(e)"},
+    {id:174,a:"Jour",b:"Nuit"},
+    {id:175,a:"Pour les IA",b:"Contre les IA"},
+    {id:176,a:"Pour la réalité virtuelle",b:"Contre la réalité virtuelle"},
+    // MUSIC & POP
+    {id:177,a:"Aya Nakamura",b:"Angèle"},
+    {id:178,a:"Maître Gims",b:"Soprano"},
+    {id:179,a:"Lomepal",b:"Roméo Elvis"},
+    {id:180,a:"IAM",b:"NTM"},
+    {id:181,a:"Red Hot Chili Peppers",b:"Green Day"},
+    {id:182,a:"Queen",b:"Linkin Park"},
+    {id:183,a:"Ariana Grande",b:"Camila Cabello"},
+    {id:184,a:"Rihanna",b:"Beyoncé"},
+    {id:185,a:"Damso",b:"Niska"},
+    {id:186,a:"Booba",b:"Kaaris"},
+    {id:187,a:"Shakira",b:"Lady Gaga"},
+    {id:188,a:"The Weeknd",b:"Drake"},
+    {id:189,a:"Madonna",b:"Céline Dion"},
+    {id:190,a:"Lana Del Rey",b:"Pink"},
+    {id:191,a:"Selena Gomez",b:"Avril Lavigne"},
+    {id:192,a:"Adele",b:"Jessie J"},
+    {id:193,a:"Imagine Dragons",b:"Coldplay"},
+    {id:194,a:"Justin Bieber",b:"Selena Gomez"},
+    {id:195,a:"Nicki Minaj",b:"Cardi B"},
+    {id:196,a:"Taylor Swift",b:"Katy Perry"},
+    {id:197,a:"Ed Sheeran",b:"Mariah Carey"},
+    {id:198,a:"Eminem",b:"Kendrick Lamar"},
+    {id:199,a:"Kanye West",b:"Jay-Z"},
+    {id:200,a:"Lil Wayne",b:"Snoop Dogg"},
+    {id:201,a:"Stromae",b:"Eddy de Pretto"},
+    {id:202,a:"Jacques Brel",b:"Charles Aznavour"},
+    {id:203,a:"Édith Piaf",b:"Goldman"},
+    {id:204,a:"Blackpink",b:"BTS"},
+    {id:205,a:"David Guetta",b:"DJ Snake"},
+    // HARRY POTTER
+    {id:206,a:"Harry Potter",b:"Hermione Granger"},
+    {id:207,a:"Voldemort",b:"Draco Malfoy"},
+    {id:208,a:"Ron Weasley",b:"Albus Dumbledore"},
+    {id:209,a:"Dobby",b:"Hagrid"},
+    {id:210,a:"Sirius Black",b:"Severus Rogue"},
+    {id:211,a:"Neville Londubat",b:"Luna Lovegood"},
+    {id:212,a:"Serdaigle",b:"Gryffondor"},
+    {id:213,a:"Serpentard",b:"Poufsouffle"},
+    {id:214,a:"Dementors",b:"Boggarts"},
+    {id:215,a:"Le Phénix",b:"Les Dragons"},
+    {id:216,a:"Licornes",b:"Hippogriffes"},
+    {id:217,a:"Marcheurs de nuit ou Centaures ?",b:"Elfes de maison"},
+    // POKEMON
+    {id:218,a:"Florizarre",b:"Tortank"},
+    {id:219,a:"Papilusion",b:"Dardargnan"},
+    {id:220,a:"Ronflex",b:"Lokhlass"},
+    {id:221,a:"Mew",b:"Mewtwo"},
+    {id:222,a:"Lugia",b:"Ho-Oh"},
+    {id:223,a:"Zapdos",b:"Sulfura"},
+    {id:224,a:"Artikodin",b:"Zapdos"},
+    {id:225,a:"Évoli",b:"Aquali / Voltali / Pyroli"},
+    {id:226,a:"Mentali",b:"Noctali"},
+    {id:227,a:"Alakazam",b:"Ectoplasma"},
+    {id:228,a:"Dracaufeu",b:"Tortank"},
+    // GEOGRAPHY & TRAVEL
+    {id:229,a:"Arménie",b:"Jordanie"},
+    {id:230,a:"Afrique du Sud",b:"Mozambique"},
+    {id:231,a:"Maroc",b:"Tunisie"},
+    {id:232,a:"Argentine",b:"Brésil"},
+    {id:233,a:"Belgique",b:"Espagne"},
+    {id:234,a:"Cambodge",b:"Laos"},
+    {id:235,a:"Inde",b:"Chine"},
+    {id:236,a:"Colombie",b:"Costa Rica"},
+    {id:237,a:"Suède",b:"Norvège"},
+    {id:238,a:"Nouvelle-Zélande",b:"Nouvelle-Calédonie"},
+    {id:239,a:"Écosse",b:"Irlande"},
+    {id:240,a:"Angleterre",b:"Italie"},
+    {id:241,a:"Grèce",b:"Chypre"},
+    {id:242,a:"Islande",b:"Ukraine"},
+    {id:243,a:"Voyager seul",b:"Voyager en groupe"},
+    // SPORTS
+    {id:244,a:"Tennis",b:"Badminton"},
+    {id:245,a:"Handball",b:"Basketball"},
+    {id:246,a:"Patinage artistique",b:"Gymnastique"},
+    {id:247,a:"Boxe",b:"Athlétisme"},
+    {id:248,a:"Escrime",b:"Équitation"},
+    {id:249,a:"Tir à l'arc",b:"Natation"},
+    {id:250,a:"Karaté",b:"Taekwondo"},
+    {id:251,a:"Volleyball",b:"Escalade"},
+    {id:252,a:"Ski",b:"Snowboard"},
+    {id:253,a:"Ski nautique",b:"Planche à voile"},
+    {id:254,a:"Spéléologie",b:"Plongée"},
+    {id:255,a:"Football américain",b:"Rugby"},
+    {id:256,a:"Zidane",b:"Mbappé"},
+    {id:257,a:"Usain Bolt",b:"Tiger Woods"},
+    // MISCELLANEOUS / FUNNY
+    {id:258,a:"Les contraires s'attirent",b:"Qui se ressemble s'assemble"},
+    {id:259,a:"Bruyant(e) au lit",b:"Silencieux(se) au lit"},
+    {id:260,a:"Avoir du caractère : qualité",b:"Avoir du caractère : défaut"},
+    {id:261,a:"Attiré(e) par les bad boys",b:"Attiré(e) par le gentil garçon"},
+    {id:262,a:"Hickeys : pour",b:"Hickeys : surestimé"},
+    {id:263,a:"Pour les soutiens-gorge",b:"Contre les soutiens-gorge"},
+    {id:264,a:"Se faire larguer par SMS",b:"Se faire larguer en face à face"},
+    {id:265,a:"Pour l'euthanasie légalisée",b:"Contre l'euthanasie légalisée"},
+    {id:266,a:"Être payé(e) pour voyager dans le monde",b:"Être payé(e) pour tester des bières"},
+    {id:267,a:"Être payé(e) pour dormir (tests scientifiques)",b:"Être nounou pour pandas"},
+    {id:268,a:"Gardien d'une île paradisiaque",b:"Testeur de jeux vidéo"},
+    {id:269,a:"Allemand",b:"Espagnol"},
+    {id:270,a:"Histoire",b:"Géographie"},
+    {id:271,a:"Bio/Géologie",b:"Physique-Chimie"},
+    {id:272,a:"EPS",b:"Technologie"},
+    {id:273,a:"Combattre un loup",b:"Combattre une hyène"},
+    {id:274,a:"Un rhinocéros",b:"Un hippopotame"},
+    {id:275,a:"Un kangourou",b:"Un macaque"},
+    {id:276,a:"Requin",b:"Crocodile"},
+    {id:277,a:"Cobra royal",b:"Anaconda"},
+    {id:278,a:"Un bison",b:"Un yak"},
+    {id:279,a:"Un puma",b:"Un léopard"},
+    {id:280,a:"Douche le matin",b:"Douche le soir"},
+    {id:281,a:"Nager avec les requins",b:"Nager avec les crocodiles"},
+    {id:282,a:"Poissons et frites (fish & chips)",b:"Hot dog"},
+    {id:283,a:"Café",b:"Thé"},
+    {id:284,a:"Chocolat",b:"Chips"},
+    {id:285,a:"Faire l'amour 1 fois par mois",b:"Faire l'amour 3 fois par jour"},
+    {id:286,a:"Manger une fraise ou une framboise par terre",b:"Boire dans une flaque d'eau sale"},
+    {id:287,a:"Ne plus jamais manger de pain",b:"Ne plus jamais manger de fruits"},
+    {id:288,a:"Porter des talons de 10 cm à vie",b:"Porter des tongs à vie"},
+    {id:289,a:"Gagner 4 millions d'euros",b:"Doubler sa durée de vie"},
+    {id:290,a:"Contrôler le temps",b:"Pouvoir faire léviter des objets"},
+    {id:291,a:"Punir tous les criminels du monde",b:"Éliminer toute la pollution"},
+    {id:292,a:"Ne plus jamais manger de pizza",b:"Ne plus jamais boire de thé"},
+    {id:293,a:"Ne plus boire d'alcool en soirée",b:"Ne plus écouter de musique en soirée"},
+    {id:294,a:"Tomber toutes les 10 secondes",b:"Pleurer dès que tu vois quelqu'un"},
+    {id:295,a:"Avoir 10 amis",b:"Avoir 1 meilleur ami"},
+    {id:296,a:"Gossip Girl",b:"Elite"},
+    {id:297,a:"GoT",b:"The Walking Dead"},
+    {id:298,a:"Les Simpsons",b:"South Park"},
+    {id:299,a:"Friends",b:"Grey's Anatomy"},
+    {id:300,a:"Stranger Things",b:"Westworld"},
+    {id:301,a:"Narcos",b:"Vikings"},
+    {id:302,a:"Prison Break",b:"NCIS"},
+    {id:303,a:"Sex Education",b:"Sex and the City"},
+    {id:304,a:"La Casa de Papel",b:"Mindhunter"},
+    {id:305,a:"Rick et Morty",b:"Bojack Horseman"},
+    {id:306,a:"Fort Boyard",b:"Koh-Lanta"},
+    {id:307,a:"Top Chef",b:"The Amazing Race"},
+    {id:308,a:"Pepsi",b:"Coca-Cola"},
+    {id:309,a:"Red Bull",b:"Dr Pepper"},
+    {id:310,a:"Chocapic",b:"Trésor"},
+    {id:311,a:"Nike",b:"Puma"},
+    {id:312,a:"L'Oréal",b:"Sephora"},
+    {id:313,a:"Fond de teint",b:"Poudre"},
+    {id:314,a:"Mascara",b:"Fard à paupières"},
+    {id:315,a:"Martin Scorsese",b:"Tarantino"},
+    {id:316,a:"Arnold Schwarzenegger",b:"Sylvester Stallone"},
+    {id:317,a:"Louis XIV",b:"Napoléon"},
+    {id:318,a:"De Gaulle",b:"Simone Veil"},
+    {id:319,a:"Marie Curie",b:"Pasteur"},
+    {id:320,a:"DiCaprio",b:"Brad Pitt"},
+    {id:321,a:"Tom Hanks",b:"Matt Damon"},
+    {id:322,a:"Clooney",b:"Ryan Reynolds"},
+    {id:323,a:"Ryan Gosling",b:"Channing Tatum"},
+    {id:324,a:"Chris Hemsworth",b:"Jason Statham"},
+    {id:325,a:"Margot Robbie",b:"Charlize Theron"},
+    {id:326,a:"King Kong",b:"Godzilla"},
+    {id:327,a:"Être Hulk",b:"Être Iron Man"},
+    {id:328,a:"Vivre 20 ans enfermé chez toi",b:"Vivre 2 ans en prison"},
+    {id:329,a:"Ne pas savoir chanter",b:"Ne pas savoir danser"},
+    {id:330,a:"Rester bloqué dans un télésiège",b:"Rester bloqué dans un ascenseur"},
+    {id:331,a:"Embrasser un rat",b:"Embrasser une chauve-souris"},
+    {id:332,a:"Vivre seul sur Mars",b:"Vivre seul sur la Lune"},
+    {id:333,a:"Perdre ta famille",b:"Perdre tes amis"},
+    {id:334,a:"Avoir des vêtements gratuits à vie",b:"Avoir des smartphones gratuits à vie"},
+    {id:335,a:"Avoir des boutons à vie",b:"Avoir des poux jusqu'à la vieillesse"},
+    {id:336,a:"Avoir la voix de Dark Vador",b:"Parler comme au Moyen Âge"},
+    {id:337,a:"Être maladroit(e) verbalement",b:"Être maladroit(e) physiquement"},
+    {id:338,a:"Manger un ver de terre",b:"Manger un œil de bœuf cru"},
+    {id:339,a:"Popcorn salé",b:"Popcorn sucré"},
+    {id:340,a:"Soja salé",b:"Soja sucré"},
+    {id:341,a:"Café",b:"Thé (bis)"},
+    {id:342,a:"Avoir 200€",b:"Avoir 20 paires de chaussures"},
+    {id:343,a:"Yeux bleus",b:"Yeux verts"},
+    {id:344,a:"Pour la peine de mort",b:"Contre la peine de mort"},
+    {id:345,a:"Plutôt optimiste",b:"Plutôt pessimiste"},
+    {id:346,a:"Voir tes rêves à la télé",b:"Pouvoir les contrôler pendant ton sommeil"},
+    {id:347,a:"Sein d'un poulet / cuisse d'un poulet ?",b:"Aile de poulet"},
+    {id:348,a:"Couscous",b:"Tajine"},
+    {id:349,a:"Ravioli",b:"Gnocchi"},
+    {id:350,a:"Camembert",b:"Fromage fort"},
+    {id:351,a:"Flammekueche",b:"Choucroute"},
+    {id:352,a:"Clafoutis",b:"Tarte Tatin"},
+    {id:353,a:"Tomate ou avocat ?",b:"Les deux"},
+    {id:354,a:"Sangria",b:"Punch"},
+    {id:355,a:"Paëlla",b:"Soupe de poulet au lait de coco"},
+    {id:356,a:"Menthe",b:"Basilic"},
+    {id:357,a:"Cumin",b:"Paprika"},
+    {id:358,a:"Curry",b:"Gingembre"},
+    {id:359,a:"Donuts",b:"Churros"},
+    {id:360,a:"Pantalon chino",b:"Jean"},
+    {id:361,a:"Jogging",b:"Short bermuda"},
+    {id:362,a:"Crop top",b:"T-shirt long"},
+    {id:363,a:"Être trop beau/belle",b:"Être trop intelligent(e)"},
+    {id:364,a:"Chico ou pas ?",b:"Pantalon chino ou jeans ?"},
+  ],
+  en: [
+    {id:1,a:"Never sleep more than 4 hours a night",b:"Sleep 12 hours a night with no naps allowed"},
+    {id:2,a:"Know whenever anyone is lying to you",b:"Be physically unable to lie yourself"},
+    {id:3,a:"Travel to the past but change nothing",b:"See the future but avoid nothing"},
+    {id:4,a:"Be very wealthy but alone your whole life",b:"Be broke but surrounded by people who love you"},
+    {id:5,a:"Have the power to fly but only at walking speed",b:"Be invisible but only when no one is looking"},
+    {id:6,a:"Live 200 years healthy but in medieval times",b:"Live 40 years but 200 years in the future"},
+    {id:7,a:"Everyone always knows what you're thinking",b:"You always know what everyone thinks of you"},
+    {id:8,a:"Never feel physical pain",b:"Never feel emotional pain"},
+    {id:9,a:"Be famous but disliked by most people",b:"Be unknown but adored by those who know you"},
+    {id:10,a:"Talk to all animals",b:"Speak every human language fluently"},
+    {id:11,a:"Eat your favorite meal every day forever",b:"Never eat the same dish twice"},
+    {id:12,a:"Have a perfect memory of everything",b:"Erase any memory you choose at will"},
+    {id:13,a:"French class",b:"Math class"},
+    {id:14,a:"Visual arts",b:"Singing"},
+    {id:15,a:"Magician",b:"Sorcerer / Witch"},
+    {id:16,a:"Summer holidays",b:"Winter holidays"},
+    {id:17,a:"Master fire",b:"Master water"},
+    {id:18,a:"Master earth",b:"Master air"},
+    {id:19,a:"Be smart but everyone thinks you're dumb",b:"Be dumb but everyone thinks you're smart"},
+    {id:20,a:"Pink",b:"Blue"},
+    {id:21,a:"Forensics",b:"Doctor"},
+    {id:22,a:"Phone",b:"Computer"},
+    {id:23,a:"Beautiful smile",b:"Beautiful eyes"},
+    {id:24,a:"Deaf",b:"Mute"},
+    {id:25,a:"Music doesn't exist",b:"Books don't exist"},
+    {id:26,a:"Push-ups",b:"Sit-ups"},
+    {id:27,a:"Norman",b:"Cyprien"},
+    {id:28,a:"Airline pilot",b:"President of the Republic"},
+    {id:29,a:"Orange juice",b:"Apple juice"},
+    {id:30,a:"Never drink milk again",b:"Never drink alcohol again"},
+    {id:31,a:"Never eat meat again",b:"Never eat dairy products again"},
+    {id:32,a:"30 kg (66 lbs)",b:"80 kg (176 lbs)"},
+    {id:33,a:"12 dogs",b:"12 brothers and sisters"},
+    {id:34,a:"Mulan",b:"Cinderella"},
+    {id:35,a:"Moana",b:"Frozen"},
+    {id:36,a:"Hercules",b:"Tarzan"},
+    {id:37,a:"Kung Fu Panda",b:"Coco"},
+    {id:38,a:"Bambi",b:"Alice in Wonderland"},
+    {id:39,a:"Peter Pan",b:"The Jungle Book"},
+    {id:40,a:"The Aristocats",b:"101 Dalmatians"},
+    {id:41,a:"Aladdin",b:"Pocahontas"},
+    {id:42,a:"Toy Story",b:"Atlantis"},
+    {id:43,a:"Lilo and Stitch",b:"Monsters, Inc."},
+    {id:44,a:"Finding Nemo",b:"Brother Bear"},
+    {id:45,a:"Tangled",b:"Brave"},
+    {id:46,a:"Zootopia",b:"Incredibles 2"},
+    {id:47,a:"Cars",b:"WALL-E"},
+    {id:48,a:"Ice Age",b:"Ratatouille"},
+    {id:49,a:"Eat frogs",b:"Eat snails"},
+    {id:50,a:"RAP",b:"POP"},
+    {id:51,a:"Rock",b:"RnB"},
+    {id:52,a:"Reggae",b:"Reggaeton"},
+    {id:53,a:"DBZ",b:"Naruto"},
+    {id:54,a:"Naruto",b:"One Piece"},
+    {id:55,a:"Pokémon",b:"Fortnite"},
+    {id:56,a:"Be rich and sad",b:"Be poor and happy"},
+    {id:57,a:"Messy",b:"Neat freak"},
+    {id:58,a:"Extrovert",b:"Introvert"},
+    {id:59,a:"Sweatshirt",b:"Cardigan"},
+    {id:60,a:"Oversize",b:"Tight-fitting"},
+    {id:61,a:"Not have a single penny in your bank account",b:"Not have any hair"},
+    {id:62,a:"Patterned socks",b:"Solid color socks"},
+    {id:63,a:"Puffer jacket",b:"Coat"},
+    {id:64,a:"Dominant",b:"Submissive"},
+    {id:65,a:"Children",b:"Animals"},
+    {id:66,a:"Love",b:"Money"},
+    {id:67,a:"Street style",b:"Chic style"},
+    {id:68,a:"Brunette",b:"Blonde"},
+    {id:69,a:"With the light on",b:"Lights off"},
+    {id:70,a:"Revenge",b:"Forgive"},
+    {id:71,a:"Bun",b:"Ponytail"},
+    {id:72,a:"Real nails",b:"Fake nails"},
+    {id:73,a:"Gold",b:"Silver"},
+    {id:74,a:"Dark eyes",b:"Light eyes"},
+    {id:75,a:"Tattooed",b:"No tattoos"},
+    {id:76,a:"Contacts",b:"Glasses"},
+    {id:77,a:"Red rose",b:"White rose"},
+    {id:78,a:"Mario",b:"Luigi"},
+    {id:79,a:"Netflix",b:"Cinema"},
+    {id:80,a:"Bicycle",b:"Electric scooter"},
+    {id:81,a:"Strawberry",b:"Raspberry"},
+    {id:82,a:"Mango",b:"Pineapple"},
+    {id:83,a:"Melon",b:"Watermelon"},
+    {id:84,a:"Apple",b:"Pear"},
+    {id:85,a:"Piano",b:"Guitar"},
+    {id:86,a:"Trumpet",b:"Saxophone"},
+    {id:87,a:"Harp",b:"Flute"},
+    {id:88,a:"Mars bar",b:"Twix"},
+    {id:89,a:"A selfie",b:"A family photo"},
+    {id:90,a:"Go skiing",b:"Go to the sea"},
+    {id:91,a:"The egg came first",b:"The chicken came first"},
+    {id:92,a:"Shower",b:"Bath"},
+    {id:93,a:"Cold water",b:"Hot water"},
+    {id:94,a:"Waffles",b:"Crepes"},
+    {id:95,a:"Ice cream",b:"Cotton candy"},
+    {id:96,a:"Singing",b:"Dancing"},
+    {id:97,a:"Writing",b:"Reading"},
+    {id:98,a:"Speaking",b:"Listening"},
+    {id:99,a:"McDonald's",b:"KFC"},
+    {id:100,a:"Pizza",b:"Lasagna"},
+    {id:101,a:"Tacos",b:"Kebab"},
+    {id:102,a:"Sushi",b:"Caramelized meat skewers"},
+    {id:103,a:"Raclette",b:"Cheese fondue"},
+    {id:104,a:"Salmon",b:"Cured ham"},
+    {id:105,a:"Tomato",b:"Avocado"},
+    {id:106,a:"Bowling",b:"Laser tag"},
+    {id:107,a:"Escape game",b:"Paintball"},
+    {id:108,a:"Mölkky",b:"Pétanque"},
+    {id:109,a:"Right-handed",b:"Left-handed"},
+    {id:110,a:"Mustache",b:"Beard"},
+    {id:111,a:"Long hair",b:"Short hair"},
+    {id:112,a:"Ballpoint pen",b:"Fountain pen"},
+    {id:113,a:"Hug",b:"Massage"},
+    {id:114,a:"Male best friend",b:"Female best friend"},
+    {id:115,a:"Pencil",b:"Mechanical pencil"},
+    {id:116,a:"Big muscles",b:"Big brains"},
+    {id:117,a:"Firefighter",b:"Astronaut"},
+    {id:118,a:"Assassin's Creed",b:"God of War"},
+    {id:119,a:"Mario Kart",b:"Zelda"},
+    {id:120,a:"2 hours of studying",b:"2 hours of sports"},
+    {id:121,a:"Sit at the very front of the class",b:"Sit at the very back"},
+    {id:122,a:"Batman",b:"Superman"},
+    {id:123,a:"Dumbledore",b:"Gandalf"},
+    {id:124,a:"Pikachu",b:"Eevee"},
+    {id:125,a:"Squirtle",b:"Bulbasaur"},
+    {id:126,a:"Asterix",b:"Obelix"},
+    {id:127,a:"Apple",b:"Samsung"},
+    {id:128,a:"Messi",b:"Ronaldo"},
+    {id:129,a:"Goku",b:"Vegeta"},
+    {id:130,a:"Lose all contacts in your phone",b:"No battery for two days"},
+    {id:131,a:"Dancing with the Stars",b:"The Voice"},
+    {id:132,a:"Secret Story",b:"Temptation Island"},
+    {id:133,a:"Table tennis",b:"Ping-pong"},
+    {id:134,a:"Pain au chocolat",b:"Chocolatine"},
+    {id:135,a:"The world of Avatar",b:"The Avengers"},
+    {id:136,a:"Participate in the Hunger Games",b:"Be thrown into the Maze"},
+    {id:137,a:"Catwoman",b:"Wonder Woman"},
+    {id:138,a:"Iron Man",b:"Captain America"},
+    {id:139,a:"Thor",b:"Hulk"},
+    {id:140,a:"Deadpool",b:"Wolverine"},
+    {id:141,a:"Sleep on your stomach",b:"Sleep on your back"},
+    {id:142,a:"Bar date",b:"Cinema date"},
+    {id:143,a:"For marriage",b:"Against marriage"},
+    {id:144,a:"A passionate 1-year relationship",b:"A nice relationship for a whole lifetime"},
+    // FILIPINO
+    {id:145,a:"Adobo",b:"Dinakdakan"},
+    {id:146,a:"Sinigang",b:"Bulalo"},
+    {id:147,a:"Unlimited rice but no hot water",b:"Hot shower but no rice for 1 month per year"},
+    {id:148,a:"Halo-Halo",b:"Leche Flan"},
+    {id:149,a:"Karaoke forever",b:"Island hopping in Palawan once a year but no karaoke"},
+    {id:150,a:"Jollibee Chickenjoy",b:"Homemade Lumpia"},
+    {id:151,a:"Ride on the roof of a Jeepney",b:"Squeeze into a tricycle with 5 others"},
+    {id:152,a:"Boracay",b:"Siargao"},
+    {id:153,a:"Tagaytay",b:"Baguio"},
+    {id:154,a:"Palawan",b:"Cebu"},
+    {id:155,a:"Chocolate Hills",b:"Mayon Volcano"},
+    {id:156,a:"Swim with Whale Sharks in Oslob",b:"Dive with Thresher Sharks in Malapascua"},
+    {id:157,a:"Hike Mt. Pulag for the sea of clouds",b:"Hike Mt. Apo (highest peak)"},
+    {id:158,a:"Get lost in the Underground River (Puerto Princesa)",b:"Explore the Enchanted River (Surigao)"},
+    {id:159,a:"Taal Volcano (smallest active volcano)",b:"Mt. Pinatubo crater lake trek"},
+    // BOOKS & MOVIES
+    {id:160,a:"Heroic fantasy",b:"Sci-Fi"},
+    {id:161,a:"Romance book",b:"Thriller"},
+    {id:162,a:"Princess Mononoke",b:"Castle in the Sky"},
+    {id:163,a:"Material gifts",b:"Non-material gifts"},
+    {id:164,a:"Share your life with someone handsome but dumb",b:"Someone ugly but intelligent"},
+    // HYPOTHETICAL
+    {id:165,a:"For extended paternity leave",b:"Against extended paternity leave"},
+    {id:166,a:"Dress all in black",b:"Dress in color"},
+    {id:167,a:"More into series",b:"More into anime"},
+    {id:168,a:"Choose your mother",b:"Choose your spouse"},
+    {id:169,a:"No sex for 2 months",b:"No junk food for 2 months"},
+    {id:170,a:"A gay son",b:"A lesbian daughter"},
+    {id:171,a:"Diarrhea during your wedding",b:"Uncontrollable laughing fit at a funeral"},
+    {id:172,a:"Do the dumping",b:"Get dumped"},
+    {id:173,a:"Resentful",b:"Not at all resentful"},
+    {id:174,a:"Day",b:"Night"},
+    {id:175,a:"For AI",b:"Against AI"},
+    {id:176,a:"For virtual reality",b:"Against virtual reality"},
+    // MUSIC
+    {id:177,a:"Aya Nakamura",b:"Angèle"},
+    {id:178,a:"Maître Gims",b:"Soprano"},
+    {id:179,a:"Lomepal",b:"Roméo Elvis"},
+    {id:180,a:"IAM",b:"NTM"},
+    {id:181,a:"Red Hot Chili Peppers",b:"Green Day"},
+    {id:182,a:"Queen",b:"Linkin Park"},
+    {id:183,a:"Ariana Grande",b:"Camila Cabello"},
+    {id:184,a:"Rihanna",b:"Beyoncé"},
+    {id:185,a:"Damso",b:"Niska"},
+    {id:186,a:"Shakira",b:"Lady Gaga"},
+    {id:187,a:"The Weeknd",b:"Drake"},
+    {id:188,a:"Lana Del Rey",b:"Pink"},
+    {id:189,a:"Selena Gomez",b:"Avril Lavigne"},
+    {id:190,a:"Adele",b:"Jessie J"},
+    {id:191,a:"Imagine Dragons",b:"Coldplay"},
+    {id:192,a:"Justin Bieber",b:"Selena Gomez"},
+    {id:193,a:"Nicki Minaj",b:"Cardi B"},
+    {id:194,a:"Taylor Swift",b:"Katy Perry"},
+    {id:195,a:"Ed Sheeran",b:"Mariah Carey"},
+    {id:196,a:"Eminem",b:"Kendrick Lamar"},
+    {id:197,a:"Kanye West",b:"Jay-Z"},
+    {id:198,a:"Lil Wayne",b:"Snoop Dogg"},
+    {id:199,a:"Stromae",b:"Eddy de Pretto"},
+    {id:200,a:"Billie Eilish",b:"Jonas Brothers"},
+    {id:201,a:"David Guetta",b:"DJ Snake"},
+    {id:202,a:"BlackPink",b:"BTS"},
+    // HARRY POTTER
+    {id:203,a:"Harry Potter",b:"Hermione Granger"},
+    {id:204,a:"Voldemort",b:"Draco Malfoy"},
+    {id:205,a:"Ron Weasley",b:"Albus Dumbledore"},
+    {id:206,a:"Dobby",b:"Hagrid"},
+    {id:207,a:"Sirius Black",b:"Severus Snape"},
+    {id:208,a:"Neville Longbottom",b:"Luna Lovegood"},
+    {id:209,a:"Ravenclaw",b:"Gryffindor"},
+    {id:210,a:"Slytherin",b:"Hufflepuff"},
+    {id:211,a:"Dementors",b:"Boggarts"},
+    {id:212,a:"The Phoenix",b:"The Dragons"},
+    {id:213,a:"Unicorns",b:"Hippogriffs"},
+    // POKEMON
+    {id:214,a:"Venusaur",b:"Blastoise"},
+    {id:215,a:"Butterfree",b:"Beedrill"},
+    {id:216,a:"Snorlax",b:"Lapras"},
+    {id:217,a:"Mew",b:"Mewtwo"},
+    {id:218,a:"Lugia",b:"Ho-Oh"},
+    {id:219,a:"Zapdos",b:"Moltres"},
+    {id:220,a:"Articuno",b:"Zapdos"},
+    {id:221,a:"Vaporeon",b:"Jolteon/Flareon"},
+    {id:222,a:"Espeon",b:"Umbreon"},
+    {id:223,a:"Alakazam",b:"Gengar"},
+    {id:224,a:"Charizard",b:"Blastoise"},
+    // GEOGRAPHY
+    {id:225,a:"Armenia",b:"Jordan"},
+    {id:226,a:"South Africa",b:"Mozambique"},
+    {id:227,a:"Morocco",b:"Tunisia"},
+    {id:228,a:"Argentina",b:"Brazil"},
+    {id:229,a:"Belgium",b:"Spain"},
+    {id:230,a:"Cambodia",b:"Laos"},
+    {id:231,a:"India",b:"China"},
+    {id:232,a:"Colombia",b:"Costa Rica"},
+    {id:233,a:"Sweden",b:"Norway"},
+    {id:234,a:"New Zealand",b:"New Caledonia"},
+    {id:235,a:"Scotland",b:"Ireland"},
+    {id:236,a:"England",b:"Italy"},
+    {id:237,a:"Greece",b:"Cyprus"},
+    {id:238,a:"Iceland",b:"Ukraine"},
+    {id:239,a:"Travel alone",b:"Travel in a group"},
+    // SPORTS
+    {id:240,a:"Tennis",b:"Badminton"},
+    {id:241,a:"Handball",b:"Basketball"},
+    {id:242,a:"Figure skating",b:"Gymnastics"},
+    {id:243,a:"Boxing",b:"Athletics"},
+    {id:244,a:"Fencing",b:"Horse riding"},
+    {id:245,a:"Archery",b:"Swimming"},
+    {id:246,a:"Karate",b:"Taekwondo"},
+    {id:247,a:"Volleyball",b:"Climbing"},
+    {id:248,a:"Skiing",b:"Snowboarding"},
+    {id:249,a:"Caving",b:"Diving"},
+    {id:250,a:"American football",b:"Rugby"},
+    {id:251,a:"Messi",b:"Ronaldo"},
+    {id:252,a:"Usain Bolt",b:"Tiger Woods"},
+    // MISC
+    {id:253,a:"Opposites attract",b:"Birds of a feather flock together"},
+    {id:254,a:"Noisy in bed",b:"Silent in bed"},
+    {id:255,a:"For legalized euthanasia",b:"Against legalized euthanasia"},
+    {id:256,a:"Be paid to travel the world",b:"Be paid to test beers"},
+    {id:257,a:"Be paid to sleep for science",b:"Be a panda nanny"},
+    {id:258,a:"Guardian of a paradise island",b:"Video game tester"},
+    {id:259,a:"German",b:"Spanish"},
+    {id:260,a:"Fight a wolf",b:"Fight a hyena"},
+    {id:261,a:"A rhinoceros",b:"A hippopotamus"},
+    {id:262,a:"A shark",b:"A crocodile"},
+    {id:263,a:"King cobra",b:"Anaconda"},
+    {id:264,a:"A puma",b:"A leopard"},
+    {id:265,a:"Morning shower",b:"Evening shower"},
+    {id:266,a:"Swim with sharks",b:"Swim with crocodiles"},
+    {id:267,a:"Fish and chips",b:"Hot dog"},
+    {id:268,a:"Coffee",b:"Tea"},
+    {id:269,a:"Chocolate",b:"Chips"},
+    {id:270,a:"Make love once a month",b:"Make love 3 times a day"},
+    {id:271,a:"Never eat bread again",b:"Never eat fruit again"},
+    {id:272,a:"Wear 10cm heels for life",b:"Wear flip-flops for life"},
+    {id:273,a:"Win 4 million euros",b:"Double your lifespan"},
+    {id:274,a:"Control time",b:"Levitate objects"},
+    {id:275,a:"Punish all criminals in the world",b:"Clean up all pollution"},
+    {id:276,a:"Have 10 friends",b:"Have 1 best friend"},
+    {id:277,a:"Gossip Girl",b:"Elite"},
+    {id:278,a:"GoT",b:"The Walking Dead"},
+    {id:279,a:"The Simpsons",b:"South Park"},
+    {id:280,a:"Friends",b:"Grey's Anatomy"},
+    {id:281,a:"Stranger Things",b:"Westworld"},
+    {id:282,a:"Narcos",b:"Vikings"},
+    {id:283,a:"Prison Break",b:"NCIS"},
+    {id:284,a:"Sex Education",b:"Sex and the City"},
+    {id:285,a:"Money Heist (La Casa de Papel)",b:"Mindhunter"},
+    {id:286,a:"Rick and Morty",b:"Bojack Horseman"},
+    {id:287,a:"Pepsi",b:"Coca-Cola"},
+    {id:288,a:"Red Bull",b:"Dr Pepper"},
+    {id:289,a:"Nike",b:"Puma"},
+    {id:290,a:"Martin Scorsese",b:"Tarantino"},
+    {id:291,a:"Arnold Schwarzenegger",b:"Sylvester Stallone"},
+    {id:292,a:"King Kong",b:"Godzilla"},
+    {id:293,a:"Be Hulk",b:"Be Iron Man"},
+    {id:294,a:"Live 20 years locked in your house",b:"Live 2 years in prison"},
+    {id:295,a:"Not know how to sing",b:"Not know how to dance"},
+    {id:296,a:"Stuck on a chairlift",b:"Stuck in an elevator"},
+    {id:297,a:"Kiss a rat",b:"Kiss a bat"},
+    {id:298,a:"Live alone on Mars",b:"Live alone on the Moon"},
+    {id:299,a:"Lose your family",b:"Lose your friends"},
+    {id:300,a:"Have free clothes for life",b:"Have free smartphones for life"},
+    {id:301,a:"Salty popcorn",b:"Sweet popcorn"},
+    {id:302,a:"Coffee",b:"Tea (round 2)"},
+    {id:303,a:"Have €200",b:"Have 20 pairs of shoes"},
+    {id:304,a:"Blue eyes",b:"Green eyes"},
+    {id:305,a:"For the death penalty",b:"Against the death penalty"},
+    {id:306,a:"Optimistic",b:"Pessimistic"},
+    {id:307,a:"See your dreams on TV",b:"Control your dreams while sleeping"},
+    {id:308,a:"Couscous",b:"Tajine"},
+    {id:309,a:"Ravioli",b:"Gnocchi"},
+    {id:310,a:"DiCaprio",b:"Brad Pitt"},
+    {id:311,a:"Tom Hanks",b:"Matt Damon"},
+    {id:312,a:"Clooney",b:"Ryan Reynolds"},
+    {id:313,a:"Ryan Gosling",b:"Channing Tatum"},
+    {id:314,a:"Chris Hemsworth",b:"Jason Statham"},
+    {id:315,a:"Margot Robbie",b:"Charlize Theron"},
+  ]
+};
+
+// NSFW Questions (same IDs range 5000+)
+const QNSFW = {
+  fr: [
+    {id:5001,a:"Une fellation",b:"Un doggy style"},
+    {id:5002,a:"Cunnilingus",b:"Doigté"},
+    {id:5003,a:"Tirer les cheveux",b:"Étrangler (érotique)"},
+    {id:5004,a:"Fessée",b:"Mordre"},
+    {id:5005,a:"Longues préliminaires",b:"Préliminaires courtes"},
+    {id:5006,a:"Faire l'amour une fois par semaine",b:"Faire l'amour tous les jours"},
+    {id:5007,a:"Envoyer un nude",b:"Recevoir un nude"},
+    {id:5008,a:"Aller dans un club échangiste",b:"Aller dans un club de strip-tease"},
+    {id:5009,a:"Pour la nuit",b:"Pour la vie"},
+    {id:5010,a:"Cowgirl (femme sur l'homme)",b:"Cuillère"},
+    {id:5011,a:"Tinder",b:"AdopteUnMec"},
+    {id:5012,a:"Je drague",b:"Je me fais draguer"},
+    {id:5013,a:"Grand romantique",b:"Du mal à tomber amoureux(se)"},
+    {id:5014,a:"Épilation complète",b:"Naturel(le)"},
+    {id:5015,a:"Pour la chirurgie esthétique",b:"Contre la chirurgie esthétique"},
+    {id:5016,a:"Embrasser quelqu'un en soirée",b:"Danser un slow"},
+    {id:5017,a:"Il ne dure que 5 min",b:"Il dure 1 heure"},
+    {id:5018,a:"Dormir avec quelqu'un qui a de l'herpès",b:"Dormir avec quelqu'un qui a le VIH"},
+    {id:5019,a:"Dominant(e)",b:"Soumis(e)"},
+    {id:5020,a:"Lumière allumée",b:"Ambiance tamisée ou nuit noire"},
+    {id:5021,a:"Être insulté(e) au lit",b:"Insulter au lit"},
+    {id:5022,a:"Se masturber avec des gadgets",b:"Se masturber manuellement"},
+    {id:5023,a:"Discrèt(e) en couple",b:"Exhibitionniste (s'afficher en couple)"},
+    {id:5024,a:"Chatouilles / câlins",b:"Massage sensuel"},
+    {id:5025,a:"String",b:"Tanga"},
+    {id:5026,a:"Pour la pilosité corporelle",b:"Contre la pilosité corporelle"},
+    {id:5027,a:"Tampons",b:"Serviettes hygiéniques"},
+    {id:5028,a:"Les vergetures c'est beau",b:"Les vergetures ce n'est pas beau"},
+    {id:5029,a:"Un mec beau avec un pénis de 10 cm",b:"Un mec moins beau avec un pénis de 20 cm"},
+    {id:5030,a:"Missionnaire pour la vie",b:"Doggy style pour la vie"},
+  ],
+  en: [
+    {id:5001,a:"A blowjob",b:"Doggy style"},
+    {id:5002,a:"Cunnilingus",b:"Fingering"},
+    {id:5003,a:"Pulling hair",b:"Choking (erotic)"},
+    {id:5004,a:"Spanking",b:"Biting"},
+    {id:5005,a:"Long foreplay",b:"Short foreplay"},
+    {id:5006,a:"Make love once a week",b:"Make love every day"},
+    {id:5007,a:"Send a nude",b:"Receive a nude"},
+    {id:5008,a:"Go to a swingers club",b:"Go to a strip club"},
+    {id:5009,a:"For the night",b:"For life"},
+    {id:5010,a:"Cowgirl (woman on man)",b:"Spooning"},
+    {id:5011,a:"Tinder",b:"AdopteUnMec"},
+    {id:5012,a:"I flirt",b:"I get flirted with"},
+    {id:5013,a:"Hopeless romantic",b:"Have trouble falling in love"},
+    {id:5014,a:"Full wax",b:"Natural"},
+    {id:5015,a:"For plastic surgery",b:"Against plastic surgery"},
+    {id:5016,a:"Make out at a party",b:"Do a slow dance"},
+    {id:5017,a:"He only lasts 5 mins",b:"He lasts 1 hour"},
+    {id:5018,a:"Sleep with someone who has herpes",b:"Sleep with someone who has AIDS"},
+    {id:5019,a:"Dominant",b:"Submissive"},
+    {id:5020,a:"Lights on",b:"Dim atmosphere or total darkness"},
+    {id:5021,a:"Get insulted in bed",b:"Insult in bed"},
+    {id:5022,a:"Masturbate with gadgets",b:"Masturbate manually"},
+    {id:5023,a:"Discreet as a couple",b:"Exhibitionist (showing off as a couple)"},
+    {id:5024,a:"Tickles / cuddles",b:"Sensual massage"},
+    {id:5025,a:"Thong",b:"Tanga"},
+    {id:5026,a:"For body hair",b:"Against body hair"},
+    {id:5027,a:"Tampons",b:"Pads"},
+    {id:5028,a:"Stretch marks are beautiful",b:"Stretch marks are not beautiful"},
+    {id:5029,a:"Handsome guy with 10cm penis",b:"Less handsome guy with 20cm penis"},
+    {id:5030,a:"Missionary for life",b:"Doggy style for life"},
+  ]
+};
+
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+let lang = "fr";
+let wyrMode = "normal";
+let wyrQueue = [];
+let wyrIdx = 0;
+let wyrChosen = null;
+let wyrRevealed = false;
+let wyrVotes = null;
+
+const IP_CATS = ["intelligence","beauty","intimacy","compat","care","money"];
+let ipScores = {intelligence:7,beauty:7,intimacy:7,compat:6,care:7,money:6};
+
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function setLang(l) {
+  lang = l;
+  const t = T[l];
+  document.getElementById("menu-title").textContent = t.menuTitle;
+  document.getElementById("menu-sub").textContent = t.menuSub;
+  document.getElementById("menu-wyr").textContent = t.wyrName;
+  document.getElementById("menu-wyr-desc").textContent = t.wyrDesc;
+  document.getElementById("menu-ip").textContent = t.ipName;
+  document.getElementById("menu-ip-desc").textContent = t.ipDesc;
+  document.getElementById("back-label").textContent = t.backMenu;
+  document.getElementById("mode-title").textContent = t.modeTitle;
+  document.getElementById("mode-sub").textContent = t.modeSub;
+  document.getElementById("mode-normal-label").textContent = t.modeNormal;
+  document.getElementById("mode-nsfw-label").textContent = t.modeNSFW;
+  document.getElementById("nsfw-title").textContent = t.nsfwTitle;
+  document.getElementById("nsfw-text").textContent = t.nsfwText;
+  document.getElementById("nsfw-confirm").textContent = t.nsfwConfirm;
+  document.getElementById("nsfw-cancel").textContent = t.nsfwCancel;
+  goTo("s-menu");
+}
+
+function showNSFWGate() { goTo("s-nsfw-gate"); }
+
+// ════════════════════════════════════════════
+// WYR GAME
+// ════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a;
+}
+
+function startWYR(mode) {
+  wyrMode = mode;
+  const pool = mode === "nsfw" ? QNSFW[lang] : Q[lang];
+  wyrQueue = shuffle(pool);
+  wyrIdx = 0;
+  wyrChosen = null;
+  wyrRevealed = false;
+  wyrVotes = null;
+  renderWYR();
+  goTo("s-wyr");
+}
+
+function restartWYR() { startWYR(wyrMode); }
+
+function renderWYR() {
+  const t = T[lang];
+  const q = wyrQueue[wyrIdx];
+  const total = wyrQueue.length;
+
+  document.getElementById("wyr-back-btn").textContent = t.wyrBack;
+  document.getElementById("wyr-counter").textContent = `${t.qLabel} ${wyrIdx+1} ${t.ofLabel} ${total}`;
+  document.getElementById("wyr-progress").style.width = `${(wyrIdx/total)*100}%`;
+
+  const choicesEl = document.getElementById("wyr-choices");
+  choicesEl.innerHTML = `
+    <button class="wyr-option ${wyrChosen==="a"?"chosen":""} ${wyrRevealed&&wyrChosen!=="a"?"not-chosen":""}" 
+      id="opt-a" onclick="handleChoice('a')" ${wyrChosen?"disabled":""}>
+      ${q.a}
+      ${wyrRevealed?`<div class="vote-pct">${getPct("a")}%</div>`:""}
+    </button>
+    <div class="or-badge">${t.or}</div>
+    <button class="wyr-option ${wyrChosen==="b"?"chosen":""} ${wyrRevealed&&wyrChosen!=="b"?"not-chosen":""}" 
+      id="opt-b" onclick="handleChoice('b')" ${wyrChosen?"disabled":""}>
+      ${q.b}
+      ${wyrRevealed?`<div class="vote-pct">${getPct("b")}%</div>`:""}
+    </button>
+  `;
+
+  const voteBar = document.getElementById("wyr-vote-bar");
+  const voteCount = document.getElementById("wyr-vote-count");
+  const actions = document.getElementById("wyr-actions");
+
+  if(wyrRevealed && wyrVotes) {
+    voteBar.style.display = "flex";
+    document.getElementById("vote-seg-a").style.width = getPct("a")+"%";
+    document.getElementById("vote-seg-b").style.width = getPct("b")+"%";
+    voteCount.style.display = "block";
+    const tot = wyrVotes.a + wyrVotes.b;
+    voteCount.textContent = t.voteCount(wyrVotes.a, wyrVotes.b);
+    actions.innerHTML = `<button class="btn-primary" onclick="nextWYR()">${t.next}</button>`;
+  } else if(wyrChosen) {
+    voteBar.style.display = "none";
+    voteCount.style.display = "none";
+    actions.innerHTML = `<button class="btn-primary" onclick="revealWYR()">${t.reveal}</button>`;
+  } else {
+    voteBar.style.display = "none";
+    voteCount.style.display = "none";
+    actions.innerHTML = "";
+  }
+}
+
+function getPct(side) {
+  if(!wyrVotes) return 50;
+  const tot = wyrVotes.a + wyrVotes.b;
+  if(tot===0) return 50;
+  return Math.round((wyrVotes[side]/tot)*100);
+}
+
+async function handleChoice(choice) {
+  if(wyrChosen) return;
+  wyrChosen = choice;
+  const q = wyrQueue[wyrIdx];
+  renderWYR();
+  await castVote(q.id, choice);
+}
+
+async function revealWYR() {
+  const q = wyrQueue[wyrIdx];
+  wyrVotes = await getVotes(q.id);
+  wyrRevealed = true;
+  renderWYR();
+}
+
+function nextWYR() {
+  wyrIdx++;
+  if(wyrIdx >= wyrQueue.length) {
+    const t = T[lang];
+    document.getElementById("done-title").textContent = t.doneTitle;
+    document.getElementById("done-sub").textContent = t.doneSub(wyrQueue.length);
+    document.getElementById("done-again").textContent = t.playAgain;
+    document.getElementById("done-menu").textContent = t.backToMenu;
+    goTo("s-wyr-done");
+  } else {
+    wyrChosen = null;
+    wyrRevealed = false;
+    wyrVotes = null;
+    renderWYR();
+  }
+}
+
+// ════════════════════════════════════════════
+// IP GAME
+// ════════════════════════════════════════════
+function startIP() {
+  ipScores = {intelligence:7,beauty:7,intimacy:7,compat:6,care:7,money:6};
+  renderIP();
+  goTo("s-ip");
+}
+
+function renderIP() {
+  const t = T[lang];
+  document.getElementById("ip-back").textContent = t.back;
+  document.getElementById("ip-title").textContent = t.ipTitle;
+  document.getElementById("ip-sub-text").textContent = t.ipSub;
+  document.getElementById("ip-reset").textContent = t.reset;
+  document.getElementById("ip-validate").textContent = t.validate;
+
+  const used = Object.values(ipScores).reduce((a,b)=>a+b,0);
+  const left = 40 - used;
+  const badge = document.getElementById("ip-points-badge");
+  badge.textContent = t.ptsLeft(left);
+  badge.className = "points-badge " + (left<0?"points-over":left===0?"points-ok":"points-warn");
+
+  const slidersEl = document.getElementById("ip-sliders");
+  slidersEl.innerHTML = IP_CATS.map(cat => {
+    const c = t.cats[cat];
+    return `
+      <div class="slider-row">
+        <div class="slider-header">
+          <span>${c.icon} ${c.name}</span>
+          <span class="slider-val">${ipScores[cat]}/10</span>
+        </div>
+        <p class="slider-desc">${c.desc}</p>
+        <input type="range" min="1" max="10" value="${ipScores[cat]}" oninput="setScore('${cat}', this.value)"/>
+        <div class="range-labels"><span>1</span><span>5</span><span>10</span></div>
+      </div>
+    `;
+  }).join("");
+}
+
+function setScore(cat, val) {
+  const v = Math.max(1, Math.min(10, Number(val)));
+  const testScores = {...ipScores, [cat]: v};
+  const used = Object.values(testScores).reduce((a,b)=>a+b,0);
+  if(used <= 40) {
+    ipScores[cat] = v;
+    document.getElementById("ip-error").style.display = "none";
+  } else {
+    document.getElementById("ip-error").style.display = "block";
+    document.getElementById("ip-error").textContent = T[lang].pointsError;
+  }
+  renderIP();
+}
+
+function resetIP() { startIP(); }
+
+function validateIP() {
+  const used = Object.values(ipScores).reduce((a,b)=>a+b,0);
+  if(used !== 40) {
+    document.getElementById("ip-error").style.display = "block";
+    document.getElementById("ip-error").textContent = T[lang].pointsError;
+    return;
+  }
+  showIPResult();
+}
+
+function showIPResult() {
+  const t = T[lang];
+  document.getElementById("ip-result-back").textContent = t.back;
+  document.getElementById("ip-result-title").textContent = t.resultTitle;
+  document.getElementById("ip-result-sub").textContent = t.resultSub;
+  document.getElementById("ip-play-again").textContent = t.playAgain;
+
+  const sorted = [...IP_CATS].sort((a,b)=>ipScores[b]-ipScores[a]);
+  const bottom = [...IP_CATS].sort((a,b)=>ipScores[a]-ipScores[b])[0];
+
+  // Radar
+  const radarEl = document.getElementById("ip-radar");
+  radarEl.innerHTML = IP_CATS.map(cat => {
+    const c = t.cats[cat];
+    const pct = (ipScores[cat]/10)*100;
+    const color = ipScores[cat]>=8?"#68d391":ipScores[cat]>=5?"#4fd1c5":"#fc8181";
+    return `
+      <div class="radar-row">
+        <span class="radar-icon">${c.icon}</span>
+        <span class="radar-label">${c.name}</span>
+        <div class="radar-bar-bg"><div class="radar-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="radar-score">${ipScores[cat]}/10</span>
+      </div>
+    `;
+  }).join("");
+
+  // Insights
+  const top = sorted[0], second = sorted[1];
+  const insightsEl = document.getElementById("ip-insights");
+  insightsEl.innerHTML = `
+    <div class="insight-card">
+      <span style="font-size:28px">${t.cats[top].icon}</span>
+      <div><div class="insight-label">${t.dominant}</div><div class="insight-value">${t.cats[top].name}</div></div>
+    </div>
+    <div class="insight-card">
+      <span style="font-size:28px">${t.cats[second].icon}</span>
+      <div><div class="insight-label">${t.secondary}</div><div class="insight-value">${t.cats[second].name}</div></div>
+    </div>
+    <div class="insight-card danger">
+      <span style="font-size:28px">${t.cats[bottom].icon}</span>
+      <div><div class="insight-label">${t.sacrifice}</div><div class="insight-value">${t.cats[bottom].name}</div></div>
+    </div>
+  `;
+
+  goTo("s-ip-result");
+}
+</script>
+
+<!-- SQL TO RUN IN SUPABASE:
+CREATE TABLE wyr_votes2 (
+  id bigserial PRIMARY KEY,
+  question_id integer NOT NULL,
+  choice text NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE wyr_votes2 ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can insert" ON wyr_votes2 FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can select" ON wyr_votes2 FOR SELECT USING (true);
+-->
+</body>
+</html>
